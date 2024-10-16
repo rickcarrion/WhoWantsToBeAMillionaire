@@ -2,6 +2,14 @@ import snowflake.connector
 import streamlit as st
 import pandas as pd
 
+user_sf = st.secrets["snowflake"]["user"]
+password_sf = st.secrets["snowflake"]["password"]
+role_sf = st.secrets["snowflake"]["role"]
+account_sf = st.secrets["snowflake"]["account"]
+warehouse_sf = st.secrets["snowflake"]["warehouse"]
+database_sf = st.secrets["snowflake"]["database"]
+schema_sf = st.secrets["snowflake"]["schema"]
+
 
 def making_snowflake_conn():
     # Establish connection to Snowflake
@@ -34,18 +42,3 @@ def exe_sf(sql: str, return_as_df=True):
 
     finally:
         conn.close()
-
-
-user_sf = st.secrets["snowflake"]["user"]
-password_sf = st.secrets["snowflake"]["password"]
-role_sf = st.secrets["snowflake"]["role"]
-account_sf = st.secrets["snowflake"]["account"]
-warehouse_sf = st.secrets["snowflake"]["warehouse"]
-database_sf = st.secrets["snowflake"]["database"]
-schema_sf = st.secrets["snowflake"]["schema"]
-
-# Now you can use these variables in your app
-st.write("user_sf Key:", user_sf)
-st.write("password_sf:", password_sf)
-
-st.write(exe_sf("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS"))

@@ -94,7 +94,7 @@ class UserGUI:
 
         # Now you can use these variables in your app
         st.write("API Key:", api_key)
-        st.write("username:", username)
+        st.write("Holaaa:", username)
 
         answers = [q["correct_answer"], q["incorrect_answer_1"], q["incorrect_answer_2"], q["incorrect_answer_3"]]
         answer_containers = [container_A, container_B, container_C, container_D]
