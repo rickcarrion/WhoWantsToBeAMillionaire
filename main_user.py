@@ -87,6 +87,15 @@ class UserGUI:
             container_B = st.container(border=True)
             container_D = st.container(border=True)
 
+        api_key = st.secrets["general"]["api_key"]
+        database_url = st.secrets["general"]["database_url"]
+        username = st.secrets["service"]["username"]
+        password = st.secrets["service"]["password"]
+
+        # Now you can use these variables in your app
+        st.write("API Key:", api_key)
+        st.write("username:", username)
+
         answers = [q["correct_answer"], q["incorrect_answer_1"], q["incorrect_answer_2"], q["incorrect_answer_3"]]
         answer_containers = [container_A, container_B, container_C, container_D]
 
