@@ -5,12 +5,16 @@ import streamlit as st
 
 class UserGUI:
     t = 3  # Time default sleep
+    conn = st.connection("snowflake")
+    questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS", ttl=600)
 
     def __init__(self):
         if 'current_page' not in st.session_state:
             st.session_state.current_page = 'add_code_page'
         if 'debug' not in st.session_state:
             st.session_state.debug = True
+        if 'index_questions_df' not in st.session_state:
+            st.session_state.index_questions_df = 0
 
     def reload_page(self):
         time.sleep(self.t)
@@ -71,13 +75,9 @@ class UserGUI:
 
         st.header("Question Time! 🥳🥳")
 
-        q = {
-            "question": "The Earth is the ___ planet in the Milky Way",
-            "correct_answer": "Third",
-            "incorrect_answer_1": "First",
-            "incorrect_answer_2": "Second",
-            "incorrect_answer_3": "Last"
-        }
+        q = self.questions_df.iloc[st.session_state.index_questions_df]
+        # st.write(q)
+        st.subheader(q["QUESTION"])  # Show Question
 
         col1, col2 = st.columns(2)
         with col1:
@@ -87,25 +87,22 @@ class UserGUI:
             container_B = st.container(border=True)
             container_D = st.container(border=True)
 
-        api_key = st.secrets["general"]["api_key"]
-        database_url = st.secrets["general"]["database_url"]
-        username = st.secrets["service"]["username"]
-        password = st.secrets["service"]["password"]
-
-        # Now you can use these variables in your app
-        st.write("API Key:", api_key)
-        st.write("Holaaa:", username)
-
-        conn = st.connection("snowflake")
-        df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
-
-        st.write(df)
-
-        answers = [q["correct_answer"], q["incorrect_answer_1"], q["incorrect_answer_2"], q["incorrect_answer_3"]]
+        answers = [q["CORRECT_ANSWER"], q["INCORRECT_OPTION_1"], q["INCORRECT_OPTION_2"], q["INCORRECT_OPTION_3"]]
         answer_containers = [container_A, container_B, container_C, container_D]
+        button_colors = {
+            "Green": "#4CAF50",
+            "Blue": "#008CBA",
+            "Red": "#f44336",
+            "Orange": "#ff9800"
+        }
 
-        for cont in answer_containers:
-            cont.subheader("Answer")
+        for i in range(4):
+            answer_containers[]
+
+        if st.button("Check"):
+            if st.session_state.index_questions_df < len(self.questions_df):
+                st.session_state.index_questions_df += 1
+                self.reload_page()
 
     def run(self):
         if st.session_state.debug:
@@ -117,6 +114,7 @@ class UserGUI:
             self.register_page()
         elif st.session_state.current_page == "question_page":
             self.question_page()
+
 
 app = UserGUI()
 app.run()
