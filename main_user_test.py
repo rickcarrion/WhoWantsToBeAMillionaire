@@ -1,6 +1,6 @@
-import streamlit as st
 import time
 import streamlit.components.v1 as components
+from main_user import *
 
 
 class UserGUI:
@@ -95,6 +95,8 @@ class UserGUI:
         # Now you can use these variables in your app
         st.write("API Key:", api_key)
         st.write("Holaaa:", username)
+
+        st.write(exe_sf("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS"))
 
         answers = [q["correct_answer"], q["incorrect_answer_1"], q["incorrect_answer_2"], q["incorrect_answer_3"]]
         answer_containers = [container_A, container_B, container_C, container_D]
