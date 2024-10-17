@@ -119,7 +119,7 @@ class UserGUI:
                                 VALUES
                                 (
                                 {st.session_state.user_first_name}, 
-                                {st.session_state["user_middle_name_(optional)"] if st.session_state["user_middle_name_(optional)"] else "NULL"}, 
+                                {st.session_state["user_middle_name_(optional)"]}, 
                                 {st.session_state.user_last_name}, 
                                 {st.session_state.user_department}, 
                                 {st.session_state.user_country}, 
