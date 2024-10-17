@@ -128,7 +128,7 @@ class UserGUI:
                                 """
             # st.write(SQL)
             try:
-                self.conn.query(SQL)
+                self.conn.query(SQL, ttl=600)
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
