@@ -127,8 +127,12 @@ class UserGUI:
                                 )
                                 """
             # st.write(SQL)
-            self.conn.query(SQL)
+            try:
+                self.conn.query(SQL)
+            except Exception as e:
+                st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
+            time.sleep(2)
             self.next_page("question_page")
 
     def question_page(self):
