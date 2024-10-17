@@ -91,7 +91,7 @@ class UserGUI:
         )
 
         if default_options == other:
-            new_option = st.text_input(f"Write here your {section}",  key=f"user_{}",)
+            new_option = st.text_input(f"Write here your {section}")
             st.session_state[f"{section.lower().replace('', '_')}"] = new_option
         else:
             st.session_state[f"{section.lower().replace('', '_')}"] = default_options
