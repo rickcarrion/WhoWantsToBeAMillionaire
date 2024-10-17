@@ -14,7 +14,7 @@ class UserGUI:
             st.session_state.current_page = 'add_code_page'
 
         if 'debug' not in st.session_state:
-            st.session_state.debug = True
+            st.session_state.debug = False
 
         if 'index_questions_df' not in st.session_state:
             st.session_state.index_questions_df = 0
@@ -34,13 +34,14 @@ class UserGUI:
         """
 
     def show_score_menu(self):
-        for i, value in enumerate(self.score_df.itertuples()):
-            disable_button = False if i == st.session_state.index_questions_df else True
-
-            st.sidebar.button(
-                f"${value}",
-                disabled=disable_button
-            )
+        # for i, value in enumerate(self.score_df.itertuples()):
+        #     disable_button = False if i == st.session_state.index_questions_df else True
+        #
+        #     st.sidebar.button(
+        #         f"${value}",
+        #         disabled=disable_button
+        #     )
+        pass
 
     def reload_page(self):
         time.sleep(self.t)
