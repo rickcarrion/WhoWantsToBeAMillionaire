@@ -173,7 +173,7 @@ class UserGUI:
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
-            self.next_page("question_page")
+            self.next_page("waiting_page")
 
     def question_page(self):
         # Center buttons
