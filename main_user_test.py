@@ -77,8 +77,8 @@ class UserGUI:
                         st.error("Sorry, this game already started 😶‍🌫️")
                 else:
                     st.error("Unknown Error, we will fix soon... 🤥")
-            except:
-                st.error("You must add a code")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
             # self.next_page("register_page")
 
