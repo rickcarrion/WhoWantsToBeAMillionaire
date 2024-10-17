@@ -128,7 +128,8 @@ class UserGUI:
                                 """
             # st.write(SQL)
             try:
-                self.conn.query(SQL, ttl=600)
+                # self.conn.query(SQL, ttl=600)
+                self.conn.query("INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id) VALUES ( 'Mateo', '', 'Sosa', 'Option2', 'Ecuador', 'WR514R' )", ttl=600)
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
