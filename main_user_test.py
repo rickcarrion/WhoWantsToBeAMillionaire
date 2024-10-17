@@ -1,44 +1,74 @@
 import time
-import streamlit.components.v1 as components
+import random
 import streamlit as st
 
 
 class UserGUI:
     t = 3  # Time default sleep
     conn = st.connection("snowflake")
-    questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS", ttl=600)
+    questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
+    score_df = conn.query("SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
 
     def __init__(self):
         if 'current_page' not in st.session_state:
             st.session_state.current_page = 'add_code_page'
+
         if 'debug' not in st.session_state:
             st.session_state.debug = True
+
         if 'index_questions_df' not in st.session_state:
             st.session_state.index_questions_df = 0
+        if 'index_user_answer' not in st.session_state:
+            st.session_state.index_user_answer = 0
+        if 'keep_playing' not in st.session_state:
+            st.session_state.keep_playing = True
+        if 'game_code' not in st.session_state:
+            st.session_state.game_code = ''
+
+        if 'shuffled_list' not in st.session_state:
+            st.session_state.shuffled_list = [0, 1, 2, 3]
+
+        self.cmd_get_session_info = """
+            SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.GAME_SESSION gs
+            WHERE gs.SESSION_CODE = '{}'
+        """
+
+    def show_score_menu(self):
+        for i, value in enumerate(self.score_df.itertuples()):
+            disable_button = False if i == st.session_state.index_questions_df else True
+
+            st.sidebar.button(
+                f"${value}",
+                disabled=disable_button
+            )
 
     def reload_page(self):
         time.sleep(self.t)
         st.rerun()
 
-    def next_page(self, name_page:str):
+    def next_page(self, name_page):
+        # st.write(name_page)
         st.session_state.current_page = name_page
         self.reload_page()
 
     def add_code_page(self):
         st.header("JOIN TO GAME")
-        st.text_input(
-            "Insert Here Your Game Code!",
-            key='code_input'
+        st.session_state.game_code = st.text_input(
+            "Insert Here Your Game Code!"
         )
 
         if st.button("JOIN", key="join_button"):
-            # Check if input is right
-            st.success("Hi!")
-            self.next_page("register_page")
+            try:
+                df = self.conn.query(self.cmd_get_session_info.format(st.session_state.game_code))
+                st.write(df)
+            except:
+                st.error("You must add a code")
+
+            # self.next_page("register_page")
 
     def register_page(self):
         st.header("Register Here!")
-        st.write(f"Now that you joined the game ({st.session_state.code_input}), you need to register:")
+        st.write(f"Now that you joined the game ({st.session_state.game_code}), you need to register:")
 
         register_values = ['Name', 'Date Birth', 'Name Group']
 
@@ -53,25 +83,31 @@ class UserGUI:
             self.next_page("question_page")
 
     def question_page(self):
-        def set_answer_container():
-            q_text = "Holaaaa"
-
-            html_code = """
-            <div style="cursor: pointer; padding: 20px; text-align: center; background-color: white;">
-                <p onclick="handleClick()">
-                    <span style='text-decoration: line-through double red;'>""" + q_text + """</span>!
-                </p>
-            </div>
-            
-            <script>
-                function handleClick() {
-                  alert("You clicked the text!");
-                }
-            </script>
+        # Center buttons
+        st.markdown(
             """
+            <style>
+            .stButton {
+                display: flex;
+                justify-content: center;
+                font-weight: bold;
+            }
+            .answer-container {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+            .answer-text {
+                flex-grow: 1; /* Ensure answer text takes up remaining space */
+                text-align: center; /* Align answer text to the left */
+                margin-left: 10px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
-            # Use components.html to display the HTML
-            components.html(html_code, height=100)
+        self.show_score_menu()
 
         st.header("Question Time! 🥳🥳")
 
@@ -89,24 +125,70 @@ class UserGUI:
 
         answers = [q["CORRECT_ANSWER"], q["INCORRECT_OPTION_1"], q["INCORRECT_OPTION_2"], q["INCORRECT_OPTION_3"]]
         answer_containers = [container_A, container_B, container_C, container_D]
-        button_colors = {
-            "Green": "#4CAF50",
-            "Blue": "#008CBA",
-            "Red": "#f44336",
-            "Orange": "#ff9800"
-        }
+
+        answer_text = ''
 
         for i in range(4):
-            answer_containers[]
+            index_char = chr(65 + i)  # 0 = A, 1 = B, ...
+
+            answer_containers[i].markdown(
+                f"""
+                    <div class="answer-container">
+                        <span class="answer-text">{answers[i]}</span>
+                    </div>
+                    """,
+                unsafe_allow_html=True
+            )
+
+            # answer_containers[i].write(answers[i])
+            if answer_containers[i].button(index_char):
+                st.session_state.index_user_answer = answers[i]
+                answer_text = f'Your answer is: {index_char}'
+
+        if answer_text:
+            st.success(answer_text)
 
         if st.button("Check"):
-            if st.session_state.index_questions_df < len(self.questions_df):
-                st.session_state.index_questions_df += 1
-                self.reload_page()
+            if st.session_state.index_user_answer == q["CORRECT_ANSWER"]:
+                st.success("Well Done!")
+            else:
+                st.error("Nice Try!")
+                st.session_state.keep_playing = False
+
+            if st.session_state.keep_playing:
+                if st.session_state.index_questions_df < len(self.questions_df):
+                    st.session_state.index_questions_df += 1
+                    self.reload_page()
+                else:
+                    st.toast("You Finished the questions!")
+                    st.balloons()
+            else:
+                self.next_page("lose_page")
+
+        # st.write(st.session_state.current_page)
+
+    def lose_page(self):
+        st.header("You lose!")
+
+    def waiting_page(self):
+        st.markdown(
+            """
+            <h1 style='text-align: center;'>Waiting Room</h1>
+            """,
+            unsafe_allow_html=True)
+
+        self.show_score_menu()
+
+        with st.container(border=True):
+            waiting_status = st.status("Waiting")
+            waiting_status.write("Waiting for Host")
+            time.sleep(5)
+
+        st.button("Rerun")
 
     def run(self):
         if st.session_state.debug:
-            st.session_state.current_page = "question_page"
+            st.session_state.current_page = "waiting_page"
 
         if st.session_state.current_page == "add_code_page":
             self.add_code_page()
@@ -114,6 +196,10 @@ class UserGUI:
             self.register_page()
         elif st.session_state.current_page == "question_page":
             self.question_page()
+        elif st.session_state.current_page == "waiting_page":
+            self.waiting_page()
+        elif st.session_state.current_page == "lose_page":
+            self.lose_page()
 
 
 app = UserGUI()
