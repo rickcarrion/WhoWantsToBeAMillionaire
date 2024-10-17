@@ -61,7 +61,22 @@ class UserGUI:
         if st.button("JOIN", key="join_button"):
             try:
                 df = self.conn.query(self.cmd_get_session_info.format(st.session_state.game_code))
-                st.write(df)
+                # st.write(df)
+                if len(df) == 0:
+                    st.error("This is not a Valid Session Code 😢")
+                elif len(df) == 1:
+                    status = None
+                    for row in df.itertuples():
+                        status = row.SESSION_STATUS
+                    if status == "lobby":
+                        st.success("This is a Valid Session Code")
+                        self.next_page("register_page")
+                    elif status == 'finished':
+                        st.error("This session game is over 🤷‍♂️")
+                    else:
+                        st.error("Sorry, this game already started 😶‍🌫️")
+                else:
+                    st.error("Unknown Error, we will fix soon... 🤥")
             except:
                 st.error("You must add a code")
 
