@@ -83,9 +83,11 @@ class UserGUI:
             # self.next_page("register_page")
 
     def get_other_option_selectbox(self, section, initial_options, other="Other"):
+        initial_options.append(other)
+
         default_options = st.selectbox(
             section,
-            [initial_options, other],
+            initial_options,
             key=f"user_{section.lower().replace('', '_')}",
         )
 
