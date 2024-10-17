@@ -132,7 +132,7 @@ class UserGUI:
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
-            time.sleep(2)
+            time.sleep(20)
             self.next_page("question_page")
 
     def question_page(self):
