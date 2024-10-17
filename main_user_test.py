@@ -92,9 +92,9 @@ class UserGUI:
 
         if default_options == other:
             new_option = st.text_input(f"Write here your {section}")
-            st.session_state[f"{section.lower().replace('', '_')}"] = new_option
+            st.session_state[f"{section.lower().replace(' ', '_')}"] = new_option
         else:
-            st.session_state[f"{section.lower().replace('', '_')}"] = default_options
+            st.session_state[f"{section.lower().replace(' ', '_')}"] = default_options
 
 
     def register_page(self):
@@ -108,22 +108,24 @@ class UserGUI:
         }
 
         for value in register_values_free:
-            st.text_input(
-                f"{value}",
-                key=f"user_{value.lower().replace(' ', '_')}",
-            )
+            st.text_input(f"{value}", key=f"user_{value.lower().replace(' ', '_')}")
 
         for section, options in register_values_options.items():
             self.get_other_option_selectbox(section, options)
 
         if st.button("Register Your Group"):
-            st.write(st.session_state.user_first_name)
-            # self.conn.query(f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
-            #                     (user_id, user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
-            #                     VALUES
-            #                     ({st.session_state.user_first_name}, {}, {}, {}, {}, {}, {})
-            #                     """)
-
+            self.conn.query(f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
+                                (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
+                                VALUES
+                                (
+                                {st.session_state.user_first_name}, 
+                                {st.session_state["user_middle_name_(optional)"] if st.session_state["user_middle_name_(optional)"] else "NULL"}, 
+                                {st.session_state.user_last_name}, 
+                                {st.session_state.user_department}, 
+                                {st.session_state.user_country}, 
+                                {st.session_state.game_code}
+                                )
+                                """)
             st.success("You Have Been Registered!")
             self.next_page("question_page")
 
