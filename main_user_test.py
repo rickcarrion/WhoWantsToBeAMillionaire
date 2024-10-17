@@ -110,7 +110,7 @@ class UserGUI:
         for value in register_values_free:
             st.text_input(
                 f"{value}",
-                key=f"user_{value.lower().replace('', '_')}",
+                key=f"user_{value.lower().replace(' ', '_')}",
             )
 
         for section, options in register_values_options.items():
