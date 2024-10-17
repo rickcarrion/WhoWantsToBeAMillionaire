@@ -126,7 +126,7 @@ class UserGUI:
                                 '{st.session_state.game_code}'
                                 )
                                 """
-            st.write(SQL)
+            # st.write(SQL)
             self.conn.query(SQL)
             st.success("You Have Been Registered!")
             self.next_page("question_page")
