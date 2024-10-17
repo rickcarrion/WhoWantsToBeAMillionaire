@@ -87,15 +87,14 @@ class UserGUI:
 
         default_options = st.selectbox(
             section,
-            initial_options,
-            key=f"user_{section.lower().replace('', '_')}",
+            initial_options
         )
 
         if default_options == other:
-            new_country = st.text_input(f"Write here your {section}",  key=f"user_{section.lower().replace('', '_')}",)
-            return new_country
+            new_option = st.text_input(f"Write here your {section}",  key=f"user_{}",)
+            st.session_state[f"{section.lower().replace('', '_')}"] = new_option
         else:
-            return default_options
+            st.session_state[f"{section.lower().replace('', '_')}"] = default_options
 
 
     def register_page(self):
