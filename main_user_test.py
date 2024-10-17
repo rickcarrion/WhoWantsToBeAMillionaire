@@ -113,8 +113,8 @@ class UserGUI:
         for section, options in register_values_options.items():
             self.get_other_option_selectbox(section, options)
 
-        if st.button("Register Your Group"):
-            self.conn.query(f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
+        if st.button("Lets Play! 🎮"):
+            SQL = f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
                                 (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
                                 VALUES
                                 (
@@ -125,7 +125,9 @@ class UserGUI:
                                 {st.session_state.user_country}, 
                                 {st.session_state.game_code}
                                 )
-                                """)
+                                """
+            st.write(SQL)
+            self.conn.query(SQL)
             st.success("You Have Been Registered!")
             self.next_page("question_page")
 
