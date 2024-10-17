@@ -117,7 +117,14 @@ class UserGUI:
             self.get_other_option_selectbox(section, options)
 
         if st.button("Register Your Group"):
-            st.success("You Registered a Group!")
+            st.write(st.session_state.user_first_name)
+            # self.conn.query(f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
+            #                     (user_id, user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
+            #                     VALUES
+            #                     ({st.session_state.user_first_name}, {}, {}, {}, {}, {}, {})
+            #                     """)
+
+            st.success("You Have Been Registered!")
             self.next_page("question_page")
 
     def question_page(self):
