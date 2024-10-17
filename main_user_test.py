@@ -118,12 +118,12 @@ class UserGUI:
                                 (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
                                 VALUES
                                 (
-                                {st.session_state.user_first_name}, 
-                                {st.session_state["user_middle_name_(optional)"]}, 
-                                {st.session_state.user_last_name}, 
-                                {st.session_state.user_department}, 
-                                {st.session_state.user_country}, 
-                                {st.session_state.game_code}
+                                '{st.session_state.user_first_name}', 
+                                '{st.session_state["user_middle_name_(optional)"]}', 
+                                '{st.session_state.user_last_name}', 
+                                '{st.session_state.user_department}', 
+                                '{st.session_state.user_country}', 
+                                '{st.session_state.game_code}'
                                 )
                                 """
             st.write(SQL)
