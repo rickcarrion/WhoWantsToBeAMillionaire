@@ -1,13 +1,50 @@
 import time
 import random
 import streamlit as st
+import snowflake.connector
+from snowflake.connector import ProgrammingError
+import pandas as pd
 
+def exe_sf(conn, sql: str, return_as_df=True):
+    cur = conn
+    try:
+        cursor = cur.cursor()
+        cursor.execute(sql)
+        data = cursor.fetchall()
+
+        # Convert data to DataFrame
+        if return_as_df:
+            columns = [col[0] for col in cursor.description]
+            dataframe = pd.DataFrame(data, columns=columns)
+            return dataframe
+        else:
+            return data
+
+    finally:
+        cur.close()
+
+def create_conn():
+    return snowflake.connector.connect(
+            user=st.secrets["snowflake"]["user"],
+            password=st.secrets["snowflake"]["password"],
+            role=st.secrets["snowflake"]["role"],
+            account=st.secrets["snowflake"]["account"],
+            warehouse=st.secrets["snowflake"]["warehouse"],
+            database=st.secrets["snowflake"]["database"],
+            schema=st.secrets["snowflake"]["schema"]
+        )
 
 class UserGUI:
     t = 3  # Time default sleep
-    conn = st.connection("snowflake")
-    questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
-    score_df = conn.query("SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
+    if False:
+        conn = st.connection("snowflake")
+
+        questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
+        score_df = conn.query("SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
+    else:
+        questions_df = exe_sf(create_conn(), sql="SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
+        score_df = exe_sf(create_conn(), sql="SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
+
 
     def __init__(self):
         if 'current_page' not in st.session_state:
@@ -60,7 +97,8 @@ class UserGUI:
 
         if st.button("JOIN", key="join_button"):
             try:
-                df = self.conn.query(self.cmd_get_session_info.format(st.session_state.game_code))
+                # df = self.conn.query(self.cmd_get_session_info.format(st.session_state.game_code))
+                df = exe_sf(create_conn(), sql=self.cmd_get_session_info.format(st.session_state.game_code))
                 # st.write(df)
                 if len(df) == 0:
                     st.error("This is not a Valid Session Code 😢")
@@ -129,11 +167,12 @@ class UserGUI:
             # st.write(SQL)
             try:
                 # self.conn.query(SQL, ttl=600)
-                self.conn.query("INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id) VALUES ( 'Mateo', '', 'Sosa', 'Option2', 'Ecuador', 'WR514R' )", ttl=600)
+                # self.conn.query("INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id) VALUES ( 'Mateo', '', 'Sosa', 'Option2', 'Ecuador', 'WR514R' )", ttl=600)
+                exe_sf(create_conn(),
+                       sql=SQL, return_as_df=False)
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
             st.success("You Have Been Registered!")
-            time.sleep(20)
             self.next_page("question_page")
 
     def question_page(self):
