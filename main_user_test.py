@@ -82,17 +82,38 @@ class UserGUI:
 
             # self.next_page("register_page")
 
+    def get_other_option_selectbox(self, section, initial_options, other="Other"):
+        default_options = st.selectbox(
+            section,
+            [initial_options, other],
+            key=f"user_{section.lower().replace('', '_')}",
+        )
+
+        if default_options == other:
+            new_country = st.text_input(f"Write here your {section}",  key=f"user_{section.lower().replace('', '_')}",)
+            return new_country
+        else:
+            return default_options
+
+
     def register_page(self):
-        st.header("Register Here!")
-        st.write(f"Now that you joined the game ({st.session_state.game_code}), you need to register:")
+        st.header("Register Here! 📃")
+        # st.write(f"Now that you joined the game ({st.session_state.game_code}), you need to register:")
 
-        register_values = ['Name', 'Date Birth', 'Name Group']
+        register_values_free = ['First Name', 'Middle Name (Optional)', 'Last Name']
+        register_values_options = {
+            "Department": ["Option1", "Option2"],
+            "Country": ["Ecuador", "Miami"]
+        }
 
-        for value in register_values:
+        for value in register_values_free:
             st.text_input(
                 f"{value}",
-                key=f"user_{value.lower().replace('', '_')}"
+                key=f"user_{value.lower().replace('', '_')}",
             )
+
+        for section, options in register_values_options.items():
+            self.get_other_option_selectbox(section, options)
 
         if st.button("Register Your Group"):
             st.success("You Registered a Group!")
