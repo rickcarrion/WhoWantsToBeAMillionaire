@@ -42,7 +42,6 @@ def create_conn():
 
 class UserGUI:
     def __init__(self):
-        self.placeholder = st.empty()
         if 'current_page' not in st.session_state:
             st.session_state.current_page = 'add_code_page'
 
@@ -66,11 +65,15 @@ class UserGUI:
         #     st.session_state.snowflake_connection = create_conn()
 
         self.t = 0  # Time default sleep
-        if 'questions_df' not in st.session_state:
-            st.session_state.questions_df = exe_sf(create_conn(),
+        if False:
+            conn = st.connection("snowflake")
+
+            questions_df = conn.query("SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
+            score_df = conn.query("SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
+        else:
+            self.questions_df = exe_sf(create_conn(),
                                   sql="SELECT * FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.QUESTIONS")
-        if 'score_df' not in st.session_state:
-            st.session_state.score_df = exe_sf(create_conn(),
+            self.score_df = exe_sf(create_conn(),
                               sql="SELECT s.SCORE FROM PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.SCORE s")
 
 
@@ -173,58 +176,55 @@ class UserGUI:
             st.session_state[f"user_{section.lower().replace(' ', '_')}"] = default_options
 
     def register_page(self):
-        placeholder = st.empty()
-        with placeholder.container():
-            st.header("Register Here! 📃")
-            # st.write(f"Now that you joined the game ({st.session_state.game_code}), you need to register:")
+        st.header("Register Here! 📃")
+        # st.write(f"Now that you joined the game ({st.session_state.game_code}), you need to register:")
 
-            register_values_free = ['First Name', 'Middle Name (Optional)', 'Last Name']
-            register_values_options = {
-                "Department": ["Actuarial", "Administration", "Claims", "Commercial", "Compliance", "Customer Service",
-                               "Data Analytics", "Finance", "Human Resources", "Information Technology", "Legal",
-                               "Marketing", "Medical Service", "Policy Administration", "Project Management", "Providers",
-                               "Quality Control", "Risk", "Underwriting"],
-                "Country": ["Ecuador", "Peru", "Colombia", "Venezuela", "Brazil", "Bolivia", "Chile", "Paraguay", "Uruguay",
-                            "Argentina", "USA", "Canada", "Mexico"]
-            }
-            #self.next_page('question_page')
+        register_values_free = ['First Name', 'Middle Name (Optional)', 'Last Name']
+        register_values_options = {
+            "Department": ["Actuarial", "Administration", "Claims", "Commercial", "Compliance", "Customer Service",
+                           "Data Analytics", "Finance", "Human Resources", "Information Technology", "Legal",
+                           "Marketing", "Medical Service", "Policy Administration", "Project Management", "Providers",
+                           "Quality Control", "Risk", "Underwriting"],
+            "Country": ["Ecuador", "Peru", "Colombia", "Venezuela", "Brazil", "Bolivia", "Chile", "Paraguay", "Uruguay",
+                        "Argentina", "USA", "Canada", "Mexico"]
+        }
 
-            for value in register_values_free:
-                st.text_input(f"{value}", key=f"user_{value.lower().replace(' ', '_')}")
+        for value in register_values_free:
+            st.text_input(f"{value}", key=f"user_{value.lower().replace(' ', '_')}")
 
-            for section, options in register_values_options.items():
-                self.get_other_option_selectbox(section, options)
+        for section, options in register_values_options.items():
+            self.get_other_option_selectbox(section, options)
 
-            if st.button("Lets Play! 🎮"):
-                if st.session_state.user_first_name and st.session_state.user_last_name:
-                    user_id = generate_unique_id()
-                    SQL = f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
-                                        (user_id, user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
-                                        VALUES
-                                        (
-                                        '{user_id}',
-                                        '{st.session_state.user_first_name}', 
-                                        '{st.session_state["user_middle_name_(optional)"]}', 
-                                        '{st.session_state.user_last_name}', 
-                                        '{st.session_state.user_department}', 
-                                        '{st.session_state.user_country}', 
-                                        '{st.session_state.game_code}'
-                                        )
-                                        """
-                    # st.write(SQL)
-                    try:
-                        # self.conn.query(SQL, ttl=600)
-                        # self.conn.query("INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id) VALUES ( 'Mateo', '', 'Sosa', 'Option2', 'Ecuador', 'WR514R' )", ttl=600)
-                        exe_sf(create_conn(),
-                               sql=SQL, return_as_df=False)
-                    except Exception as e:
-                        st.error(f"An unexpected error occurred: {e}")
-                    st.success("You Have Been Registered!")
-                    st.session_state.user_id_logged_in = user_id
-                    time.sleep(1.5)
-                    self.next_page("question_page")
-                else:
-                    st.error("Please fill in all fields. The middle name is the only optional field!")
+        if st.button("Lets Play! 🎮"):
+            if st.session_state.user_first_name and st.session_state.user_last_name:
+                user_id = generate_unique_id()
+                SQL = f"""INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP
+                                    (user_id, user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id)
+                                    VALUES
+                                    (
+                                    '{user_id}',
+                                    '{st.session_state.user_first_name}', 
+                                    '{st.session_state["user_middle_name_(optional)"]}', 
+                                    '{st.session_state.user_last_name}', 
+                                    '{st.session_state.user_department}', 
+                                    '{st.session_state.user_country}', 
+                                    '{st.session_state.game_code}'
+                                    )
+                                    """
+                # st.write(SQL)
+                try:
+                    # self.conn.query(SQL, ttl=600)
+                    # self.conn.query("INSERT INTO PROD_DATASCIENCE_DB.PRJ_003_WHOWANTSTOBEAMILLIONAIRE.USERS_MAP (user_first_name, user_middle_name, user_last_name, user_department, user_country, group_game_session_id) VALUES ( 'Mateo', '', 'Sosa', 'Option2', 'Ecuador', 'WR514R' )", ttl=600)
+                    exe_sf(create_conn(),
+                           sql=SQL, return_as_df=False)
+                except Exception as e:
+                    st.error(f"An unexpected error occurred: {e}")
+                st.success("You Have Been Registered!")
+                st.session_state.user_id_logged_in = user_id
+                time.sleep(1.5)
+                self.next_page("question_page")
+            else:
+                st.error("Please fill in all fields. The middle name is the only optional field!")
 
     def get_current_session_state(self):
         df = exe_sf(create_conn(), sql=self.cmd_get_session_info.format(st.session_state.game_code))
@@ -237,76 +237,70 @@ class UserGUI:
     def question_page(self):
         # Center buttons
         # st.write("Im Hereeee")
-
         session_status = self.get_current_session_state()
         # st.write(session_status)
         if (session_status == 'playing') & (st.session_state.keep_playing == True):
-            placeholder = st.empty()
-            with placeholder.container():
-                st.markdown(self.centered_buttons_questions, unsafe_allow_html=True)
+            st.markdown(self.centered_buttons_questions, unsafe_allow_html=True)
 
-                st.header("Question Time! 🥳🥳")
+            st.header("Question Time! 🥳🥳")
 
-                q = st.session_state.questions_df.iloc[st.session_state.index_questions_df]
-                # st.write(q)
-                st.subheader(q["QUESTION"])  # Show Question
+            q = self.questions_df.iloc[st.session_state.index_questions_df]
+            # st.write(q)
+            st.subheader(q["QUESTION"])  # Show Question
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    container_A = st.container(border=True)
-                    container_C = st.container(border=True)
-                with col2:
-                    container_B = st.container(border=True)
-                    container_D = st.container(border=True)
+            col1, col2 = st.columns(2)
+            with col1:
+                container_A = st.container(border=True)
+                container_C = st.container(border=True)
+            with col2:
+                container_B = st.container(border=True)
+                container_D = st.container(border=True)
 
-                answers_list = [q["CORRECT_ANSWER"], q["INCORRECT_OPTION_1"], q["INCORRECT_OPTION_2"], q["INCORRECT_OPTION_3"]]
-                answers = [answers_list[i] for i in st.session_state.multiple_choice_options_shuffle]
-                answer_containers = [container_A, container_B, container_C, container_D]
+            answers_list = [q["CORRECT_ANSWER"], q["INCORRECT_OPTION_1"], q["INCORRECT_OPTION_2"], q["INCORRECT_OPTION_3"]]
+            answers = [answers_list[i] for i in st.session_state.multiple_choice_options_shuffle]
+            answer_containers = [container_A, container_B, container_C, container_D]
 
-                answer_text = ''
+            answer_text = ''
 
-                for i in range(4):
-                    index_char = chr(65 + i)  # 0 = A, 1 = B, ...
+            for i in range(4):
+                index_char = chr(65 + i)  # 0 = A, 1 = B, ...
 
-                    answer_containers[i].markdown(
-                        f"""
-                                    <div class="answer-container">
-                                        <span class="answer-text">{answers[i]}</span>
-                                    </div>
-                                    """,
-                        unsafe_allow_html=True
-                    )
+                answer_containers[i].markdown(
+                    f"""
+                                <div class="answer-container">
+                                    <span class="answer-text">{answers[i]}</span>
+                                </div>
+                                """,
+                    unsafe_allow_html=True
+                )
 
-                    # answer_containers[i].write(answers[i])
-                    if answer_containers[i].button(index_char):
-                        st.session_state.index_user_answer = answers[i]
-                        answer_text = f'Your answer is: {index_char}'
+                # answer_containers[i].write(answers[i])
+                if answer_containers[i].button(index_char):
+                    st.session_state.index_user_answer = answers[i]
+                    answer_text = f'Your answer is: {index_char}'
 
-                if answer_text:
-                    st.success(answer_text)
+            if answer_text:
+                st.success(answer_text)
 
-                if st.button("Check"):
-                    if st.session_state.index_user_answer == q["CORRECT_ANSWER"]:
-                        st.success("Well Done!")
+            if st.button("Check"):
+                if st.session_state.index_user_answer == q["CORRECT_ANSWER"]:
+                    st.success("Well Done!")
+                else:
+                    st.error("Nice Try!")
+                    st.session_state.keep_playing = False
+
+                if st.session_state.keep_playing:
+                    if st.session_state.index_questions_df < len(self.questions_df):
+                        st.session_state.index_questions_df += 1
+                        self.reload_page()
                     else:
-                        st.error("Nice Try!")
-                        st.session_state.keep_playing = False
+                        st.toast("You Finished the questions!")
+                        st.balloons()
+                else:
+                    self.next_page("lose_page")
 
-                    if st.session_state.keep_playing:
-                        if st.session_state.index_questions_df < len(st.session_state.questions_df):
-                            st.session_state.index_questions_df += 1
-                            self.reload_page()
-                        else:
-                            st.toast("You Finished the questions!")
-                            st.balloons()
-                    else:
-                        self.next_page("lose_page")
-                st.rerun()
-            placeholder.empty()
-
+            self.reload_page()
         else:
-
-
             self.next_page("waiting_page")
 
         # st.write(st.session_state.game_code)
@@ -319,31 +313,26 @@ class UserGUI:
         st.header("You lose!")
 
     def waiting_page(self):
-
-        #time.sleep(1)
+        time.sleep(1)
         session_status = self.get_current_session_state()
         # st.write(session_status)
         if (session_status == 'waiting') | (session_status == 'lobby'):
-            placeholder = st.empty()
-            with placeholder.container():
-                st.markdown(
-                    """
-                    <h1 style='text-align: center;'>Waiting Room</h1>
-                    """,
-                    unsafe_allow_html=True)
+            st.markdown(
+                """
+                <h1 style='text-align: center;'>Waiting Room</h1>
+                """,
+                unsafe_allow_html=True)
 
-                # self.show_score_menu()
+            # self.show_score_menu()
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.header("Waiting Room")
-                    with st.status("Waiting"):
-                        st.write("Waiting for Host")
-                with col2:
-                    st.write('Table here')
-                time.sleep(2)
-                st.write('Rerunning')
-            placeholder.empty()
+            col1, col2 = st.columns(2)
+            with col1:
+                st.header("Waiting Room")
+                with st.status("Waiting"):
+                    st.write("Waiting for Host")
+            with col2:
+                st.write('Table here')
+            time.sleep(30)
             st.rerun()
         elif (session_status == 'finished'):
             time.sleep(10)
@@ -351,10 +340,10 @@ class UserGUI:
         elif (session_status == 'playing'):
             self.next_page("question_page")
 
-
     def run(self):
         if st.session_state.debug:
-            st.session_state.current_page = "register_page"
+            st.session_state.current_page = "question_page"
+
         st.write(st.session_state.current_page)
 
         if st.session_state.current_page == "add_code_page":
